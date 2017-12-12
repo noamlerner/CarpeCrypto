@@ -1,0 +1,24 @@
+Indicators based on vwap
+    buy at high
+    sell at low
+Indicators:
+    Bollinger Bands
+    RSI
+    MACD
+
+
+
+Moving Forward
+    imlement indicators
+    implement   class
+    Qlearner
+        implement states_seen so far
+        dyna?
+    cryptolearner
+        should take in qlearner, indicators
+        create a state object for each time
+        calculate rewrad based on vwap
+        think strategyt learner
+
+    correct spelling in tihjs lsit (hodl)
+
