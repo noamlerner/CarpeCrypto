@@ -50,8 +50,10 @@ class qlearner(object):
 
     def _best_action(self, actions):
         return np.argmax(actions)
+
     def _random_action(self):
         return rand.randint(0, self.num_actions - 1)
+
     def query(self,s_prime,r):
         """
         @summary: Update the Q table and return an action
@@ -61,6 +63,7 @@ class qlearner(object):
         """
         # record keeping
         self.model[self.s, self.a] = np.array([s_prime, r])
+        self._see_state_action(self.s, self.a)
         self.Q[self.s, self.a] = self._new_Q_value(self.s, self.a, r, s_prime)
         # dyna
         self._hallucinate()
@@ -70,7 +73,6 @@ class qlearner(object):
             self.a = self._random_action()
         else:
             self.a = self._best_action(actions=self.Q[s_prime])
-        self._see_state_action(self.s, self.a)
         return self.a
 
     def _see_state_action(self,s,a):
@@ -94,8 +96,6 @@ class qlearner(object):
         for i in range(self.dyna):
             s = np.random.choice(self.states_seen['l'])
             actions_taken = self.states_seen[s]
-            if len(actions_taken) is 0:
-                continue
             a = np.random.choice(actions_taken)
             hallucination = self.model[s, a]
             old_value = self.Q[s,a]
