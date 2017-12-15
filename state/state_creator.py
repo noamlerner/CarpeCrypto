@@ -1,5 +1,5 @@
 from state import indicators
-
+import math
 
 class state_creator(object):
     '''
@@ -25,7 +25,8 @@ class state_creator(object):
         returns a state from [0..8] representing the current price relative to the current bollinger bands and the last price
         relative to the last bollinger bands.
         '''
-        roling_band = indicators.bollinger_bands(self._slice_for_window(prices,i[1],2), i[1])
+        window = i[1]
+        roling_band = indicators.bollinger_bands(self._slice_for_window(prices,window,2), window)
         current_price = prices.iloc[-1]
         last_price = prices.iloc[-2]
         current_band = roling_band.iloc[-1]
@@ -41,3 +42,28 @@ class state_creator(object):
         if last_price[0] < last_band['LOWER_BAND']:
             last_price_state -= 1
         return str(current_price_state * 3 + last_price_state)
+
+    def _num_to_precision(self, num, precision):
+        '''
+        takes in a number, rounds it to the the number of places specified by precision and returns an int.
+        examples: input => output
+            (62.5, 1) => 6
+            (62.5, 2) => 63
+            (62.5, 4) => 625
+        '''
+        in_front_of_decimal = int(math.log(num,10)) + 1
+        n = num / 10 ** in_front_of_decimal
+        return int(round(n,precision) * 10**precision)
+
+    def rsi_state(self, i, prices):
+        window = i[1]
+        rsi = indicators.rolling_rsi(self._slice_for_window(prices,window,2),window)
+        current_rsi = rsi.iloc[-1][0]
+        last_rsi = rsi.iloc[-2][0]
+        precision = 1
+        if len(i) == 3 and 'precision' in i[2]:
+            precision = i[2]['precision']
+
+        rsi_0 = self._num_to_precision(current_rsi,precision)
+        rsi_1 = self._num_to_precision(last_rsi,precision)
+        return str(rsi_0) + str(rsi_1)

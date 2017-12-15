@@ -37,7 +37,7 @@ def _rsi_for_window(window):
     return 100 - 100 / (1 +RS)
 
 def rolling_rsi(prices, window=10):
-    return pd.rolling_apply(prices, window, _rsi_for_window)
+    return prices.rolling(window=window, center=False).apply(_rsi_for_window)
 
 def rolling_momentum(prices, window=20):
     rm = pd.rolling_apply(prices, window, lambda arr: arr[-1]/arr[0] - 1)
