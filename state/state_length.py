@@ -9,8 +9,10 @@ class state_length(object):
 
     def example_indicator_num_states(self,i):
         return "4"
+
     def bbands_num_states(self,i):
         return "8"
+
     def rsi_num_states(self,i):
         precision = 1
         if len(i) == 3 and 'precision' in i[2]:
