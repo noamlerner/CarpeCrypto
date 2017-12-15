@@ -11,8 +11,9 @@ import numpy as np
 import pandas as pd
 
 def bollinger_bands(prices, window=20):
-    sma = pd.rolling_mean(prices, window=window)
-    std = pd.rolling_std(prices,window=window)
+    rolling_pd = prices.rolling(window=window,center=False)
+    sma = rolling_pd.mean()
+    std = rolling_pd.std()
     bands_df = pd.DataFrame(index=sma.index, columns=['LOWER_BAND', 'UPPER_BAND'])
     bands_df['UPPER_BAND'] = sma + 2 * std
     bands_df['LOWER_BAND'] = sma - 2 * std

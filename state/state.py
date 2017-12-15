@@ -1,6 +1,7 @@
-from state_creator import state_creator
-from state_length import state_length
-from state_comparator import state_comparator
+from state.state_comparator import state_comparator
+from state.state_creator import state_creator
+from state.state_length import state_length
+
 
 class state(object):
     '''
@@ -18,15 +19,16 @@ class state(object):
         self.state_creator = state_creator()
         self.state_length = state_length()
         self.state_comparator = state_comparator()
+
     def get_num_states(self):
         '''
         returns the number of states the list of indicators this class was initialized with will require
         :return: int
         '''
-        num_states = 0
+        num_states = ""
         for i in self._indicators:
             num_states += self._get_num_states_for_indicator(i)
-        return  num_states
+        return  int(num_states)
 
     def _get_num_states_for_indicator(self,i):
         func_name = i[0] + "_num_states"

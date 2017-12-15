@@ -15,3 +15,4 @@ class state_comparator(object):
         for i in range(4):
             comparison += int(state1[i]) - int(state2)
         return comparison
+
