@@ -37,5 +37,13 @@ class state_comparator(object):
         return 99
 
 
-
+    def rsi_compare(self, i,state1, state2):
+        precision = 1
+        if len(i) == 3 and 'precision' in i[2]:
+            precision = i[2]['precision']
+        r1 = (int(state1[:precision]),int(state1[precision:]))
+        r2 = (int(state2[:precision]),int(state2[precision:]))
+        diff1 = r1[0] - r2[0]
+        diff2 = r1[1] - r2[1]
+        return diff1**2 + diff2**2
 

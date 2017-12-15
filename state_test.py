@@ -5,4 +5,6 @@ indicators = [('rsi',5,{'precision':2}),('bbands',10)]
 s = state(indicators=indicators)
 
 print(s.get_num_states())
-print(s.get_state(prices))
+state1 = s.get_state(prices)
+state2 = s.get_state(prices[:-10])
+print(s.compare(state1,state2))

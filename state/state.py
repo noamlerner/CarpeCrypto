@@ -46,7 +46,7 @@ class state(object):
             states.append(getattr(self.state_creator,func_name)(i, prices_to_date))
         return "".join(states)
 
-    def state_similarity_score(self, state1, state2):
+    def compare(self, state1, state2):
         '''
         returns a score as to how similar two states are.
         If state1 == state2, this should return 0.
@@ -55,10 +55,12 @@ class state(object):
         :return: int, simlarity score
         '''
         score = 0
+        at = 0
         for i in self._indicators:
-            l = self._get_num_states_for_indicator(i)
+            l = len(self._get_num_states_for_indicator(i))
             func_name = i[0] + "_compare"
-            score += getattr(self.state_comparator,func_name)(i,state1[l], state2[l])
+            score += getattr(self.state_comparator,func_name)(i,state1[at:at+l], state2[at:at+l])
+            at = l
         return score
 
 
