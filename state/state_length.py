@@ -15,4 +15,6 @@ class state_length(object):
         precision = 1
         if len(i) == 3 and 'precision' in i[2]:
             precision = i[2]['precision']
-        return str(precision * 2)
+        places = precision * 2
+        return "9" * places
+
