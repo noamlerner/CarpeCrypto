@@ -55,8 +55,13 @@ class qlearner(object):
     def _best_action(self, actions):
         return np.argmax(actions)
 
-    def _random_action(self):
-        return rand.randint(0, self.num_actions - 1)
+    def _random_action(self, actions):
+        '''
+        takes any action that is NOT the best action
+        '''
+        best_action = self._best_action(actions)
+        possible = [i for i in range(self.num_actions) if i != best_action]
+        return rand.choice(possible)
 
     def query(self,s_prime,r):
         """
@@ -74,7 +79,7 @@ class qlearner(object):
         # action
         self.s = s_prime
         if self._should_take_random_action():
-            self.a = self._random_action()
+            self.a = self._random_action(self.Q[s_prime])
         else:
             self.a = self._best_action(actions=self.Q[s_prime])
         return self.a
