@@ -4,6 +4,7 @@ Template for implementing QLearner  (c) 2015 Tucker Balch
 
 import numpy as np
 import random as rand
+import pandas as pd
 class qlearner(object):
 
     def __init__(self, \
@@ -14,10 +15,6 @@ class qlearner(object):
         rar = 0.9, \
         radr = 0.999, \
         dyna = 0):
-        # states seen so far and the actions taken for each state. the 'l' is a list version of all the keys since keys in
-        # python3 dicts are stored as a set. This means every time we want to select a random key (as we do in dyna) it would
-        # be o(n) to convert the keys to a list. This way we don't have to repeatedly do that.
-        self.states_seen = {'l':[]}
         self.num_actions = num_actions
         self.num_states = num_states
         self.alpha = alpha
@@ -32,6 +29,8 @@ class qlearner(object):
         # this represents our model of which state follows a particular state and action. so self.Model[s,a] will return a
         # two values np array with (s_prime, r), the new state and the reward for that state.
         self.model = np.zeros((num_states, num_actions, 2))
+        self._states_seen = pd.DataFrame(columns=['state', 'actions'])
+        self._states_seen = self._states_seen.set_index('state')
 
     def query_state(self, s):
         """
@@ -42,11 +41,11 @@ class qlearner(object):
         self.s = s
         self.a = self._best_action(actions=self.Q[s])
         return self.a
-    def seen_state(self,state):
+    def has_seen_state(self, state):
         '''
         For a given state, this will return whether or not the state has been trained on.
         '''
-        return state in self.states_seen
+        return state in self._states_seen.index
 
     def _should_take_random_action(self):
         should_rand = np.random.choice(2,p=[1-self.rar, self.rar])
@@ -81,11 +80,11 @@ class qlearner(object):
         return self.a
 
     def _see_state_action(self,s,a):
-        if s not in self.states_seen:
-            self.states_seen[s] = [a]
-            self.states_seen['l'].append(s)
-        elif a not in self.states_seen[s]:
-            self.states_seen[s].append(a)
+        if s not in self._states_seen.index:
+            self._states_seen.loc[s] = [np.array([a])]
+            # self.states_seen['l'].append(s)
+        elif a not in self._states_seen.loc[s]:
+            self._states_seen.loc[s] = [np.append(self._states_seen.loc[s]['actions'], [a])]
 
     def _new_Q_value(self, s, a, r, s_prime):
         old_value = (1 - self.alpha) * self.Q[s,a]
@@ -98,9 +97,9 @@ class qlearner(object):
             return
         # if dyna isnt doing anything we can end early
         unchanged_iterations = 0
-        for i in range(self.dyna):
-            s = np.random.choice(self.states_seen['l'])
-            actions_taken = self.states_seen[s]
+        d = self._states_seen.sample(self.dyna, replace=True)
+        for s in d.index:
+            actions_taken = self._states_seen.loc[s]['actions']
             a = np.random.choice(actions_taken)
             hallucination = self.model[s, a]
             old_value = self.Q[s,a]
