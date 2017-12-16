@@ -16,7 +16,7 @@ class state_creator(object):
         you would pass in (5,2) and this would return a slice of the prices that is of size 7 since we do not need more values
         than that in the rolling calculation, and more values would waste performance
         '''
-        return prices[-(window+values_needed):-1]
+        return prices[-(window+values_needed-1):]
     def example_indicator_state(self, i, prices):
         return "1111"
 
@@ -33,13 +33,13 @@ class state_creator(object):
         last_band = roling_band.iloc[-2]
         current_price_state = 1
         last_price_state = 1
-        if current_price[0] > current_band['UPPER_BAND']:
+        if current_price > current_band['UPPER_BAND']:
             current_price_state += 1
-        if current_price[0] < current_band['LOWER_BAND']:
+        if current_price < current_band['LOWER_BAND']:
             current_price_state -= 1
-        if last_price[0] > last_band['UPPER_BAND']:
+        if last_price > last_band['UPPER_BAND']:
             last_price_state += 1
-        if last_price[0] < last_band['LOWER_BAND']:
+        if last_price < last_band['LOWER_BAND']:
             last_price_state -= 1
         return str(current_price_state * 3 + last_price_state)
 
@@ -51,19 +51,36 @@ class state_creator(object):
             (62.5, 2) => 63
             (62.5, 4) => 625
         '''
+        if num == 0:
+            return  0
         in_front_of_decimal = int(math.log(num,10)) + 1
         n = num / 10 ** in_front_of_decimal
         return int(round(n,precision) * 10**precision)
 
+
+    def _with_length(self, num, l):
+        '''
+        returns a string representing num and adds 0s at the front until the length is len
+        '''
+        s = str(num)
+        delta = l - len(s)
+        return "0"*delta + s
     def rsi_state(self, i, prices):
         window = i[1]
         rsi = indicators.rolling_rsi(self._slice_for_window(prices,window,2),window)
-        current_rsi = rsi.iloc[-1][0]
-        last_rsi = rsi.iloc[-2][0]
+        current_rsi = rsi.iloc[-1]
+        last_rsi = rsi.iloc[-2]
         precision = 1
         if len(i) == 3 and 'precision' in i[2]:
             precision = i[2]['precision']
 
         rsi_0 = self._num_to_precision(current_rsi,precision)
         rsi_1 = self._num_to_precision(last_rsi,precision)
-        return str(rsi_0) + str(rsi_1)
+        s0 = self._with_length(rsi_0,precision)
+        s1 =self._with_length(rsi_1,precision)
+        # essentially elimating 10/100/1000... and rounding to 9/99/999
+        if len(s0) > precision:
+            s0 = "9" * precision
+        if len(s1) > precision:
+            s1 = "9" * precision
+        return s0 + s1

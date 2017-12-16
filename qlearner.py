@@ -11,8 +11,8 @@ class qlearner(object):
         num_actions = 4, \
         alpha = 0.2, \
         gamma = 0.9, \
-        rar = 0.5, \
-        radr = 0.99, \
+        rar = 0.9, \
+        radr = 0.999, \
         dyna = 0):
         # states seen so far and the actions taken for each state. the 'l' is a list version of all the keys since keys in
         # python3 dicts are stored as a set. This means every time we want to select a random key (as we do in dyna) it would
@@ -42,6 +42,11 @@ class qlearner(object):
         self.s = s
         self.a = self._best_action(actions=self.Q[s])
         return self.a
+    def seen_state(self,state):
+        '''
+        For a given state, this will return whether or not the state has been trained on.
+        '''
+        return state in self.states_seen
 
     def _should_take_random_action(self):
         should_rand = np.random.choice(2,p=[1-self.rar, self.rar])

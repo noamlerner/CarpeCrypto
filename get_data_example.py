@@ -14,6 +14,9 @@ interval=60 means every 60 minutes, other options: 1 (default), 5, 15, 30, 60, 2
 with interval=60 we can get at most a month of data as of the time this comment is written.
 '''
 ohlc, last = k.get_ohlc_data("BCHUSD",since=0,interval=60)
+# reverse data frame so that newest date at the end
+ohlc = ohlc.iloc[::-1]
+
 print(ohlc)
 '''
 ohlc returns a pandas dataframe with columns:
