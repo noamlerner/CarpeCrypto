@@ -41,6 +41,26 @@ class qlearner(object):
         self.s = s
         self.a = self._best_action(actions=self.Q[s])
         return self.a
+    def get_states_seen(self):
+        return self._states_seen.index
+
+    def take_action_based_on_similarity_scores(self, scores):
+        '''
+        pass in an array that tells you the similarity states to a given state and this will return a boosted/weighted action
+        to take
+        :param scores: retrieved from state.get_similarity_scores
+        :return: action
+        '''
+        actions = np.zeros(self.num_actions)
+        num_voted = np.zeros(self.num_actions)
+        for s in scores.index:
+            a = self._best_action(self.Q[s])
+            actions[a] += scores.loc[s]
+            num_voted[a]+=1
+        # TODO 0 numvoted check, dont count that index
+        actions /= num_voted
+        return np.argmin(actions)
+
     def has_seen_state(self, state):
         '''
         For a given state, this will return whether or not the state has been trained on.

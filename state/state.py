@@ -1,8 +1,9 @@
-from state.state_comparator import state_comparator
 from state.state_creator import state_creator
+from state.state_comparator import state_comparator
 from state.state_length import state_length
 from state.minimum_datapoints_required import minimum_datapoints_required
-
+import numpy as np
+import pandas as pd
 class state(object):
     '''
     This acts as an api to handle state.
@@ -20,6 +21,7 @@ class state(object):
         self.state_length = state_length()
         self.state_comparator = state_comparator()
         self.min_dp = minimum_datapoints_required()
+        self.num_states_length = -1
     def get_num_states(self):
         '''
         returns the number of states the list of indicators this class was initialized with will require
@@ -28,6 +30,7 @@ class state(object):
         num_states = ""
         for i in self._indicators:
             num_states += self._get_num_states_for_indicator(i)
+        self.num_states_length = len(num_states)
         return  int(num_states) + 1
 
     def _get_num_states_for_indicator(self,i):
@@ -45,8 +48,7 @@ class state(object):
             func_name = i[0] + "_state"
             states.append(getattr(self.state_creator,func_name)(i, prices_to_date))
         return "".join(states)
-
-    def compare(self, state1, state2):
+    def compare(self,state1, state2):
         '''
         returns a score as to how similar two states are.
         If state1 == state2, this should return 0.
@@ -56,12 +58,31 @@ class state(object):
         '''
         score = 0
         at = 0
+        s1 = str(state1)
+        diff = self.num_states_length - len(s1)
+        s1 = "0"*diff + s1
+        s2 = str(state2)
+        diff = self.num_states_length - len(s2)
+        s2 = "0"*diff + s2
+
         for i in self._indicators:
             l = len(self._get_num_states_for_indicator(i))
             func_name = i[0] + "_compare"
-            score += getattr(self.state_comparator,func_name)(i,state1[at:at+l], state2[at:at+l])
+            score += getattr(self.state_comparator,func_name)(i,s1[at:at+l], s2[at:at+l])
             at = l
         return score
+
+    def get_similarity_scores(self, states, state):
+        '''
+        returns a dataframe [state:score]
+        :param states: all states to compare
+        :param state: state to compare them to
+        :return: dataframe
+        '''
+        df = pd.DataFrame(columns=["score"])
+        for s in states:
+            df.loc[s] = self.compare(state,s)
+        return df
 
     def minimum_datapoints_required(self):
         min_required = 1

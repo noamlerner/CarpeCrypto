@@ -15,3 +15,6 @@ class portfolio:
 
     def value(self, prices):
         return self.holding * prices.iloc[-1] + self.amount
+
+    def is_holding(self):
+        return self.holding != 0
