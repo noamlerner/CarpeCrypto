@@ -3,6 +3,8 @@ class state_length(object):
     this class should hold a method for every indicator we want to implement.
     The method should be named [indicator name]_num_states and take in one parameters - the indicator tuple
     it should then return the amount of states this indicator tuple needs as a string.
+    To understand why a specific value is returned for any given indicator, please look at the state definitions in
+    state_creator.py
     '''
     def __init__(self):
         pass

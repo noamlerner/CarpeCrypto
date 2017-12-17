@@ -1,4 +1,5 @@
 import math
+import numpy as np
 class state_comparator(object):
     '''
     this class should hold a method for every indicator we want to implement.
@@ -37,18 +38,24 @@ class state_comparator(object):
         return 99
 
 
-    def rsi_compare(self, i,state1, state2):
+    def rsi_compare(self, i, state1, state2):
         '''
-        calculates similarity based on how close the difference between the current_rsi and last_rsi for each state
+            Calculates simliarity based on the sum of the following values:
+                absolute value of difference in current rsi and last rsi
+                absolute value difference in the difference between the current rsi and the last rsi
+                example:precision=1, state1=12 state2=34
+                returns (3-1) + (4-2) + ( (2-1) - (4-3) ) = 2+ 2 + 0 = 4
         '''
         precision = 1
         if len(i) == 3 and 'precision' in i[2]:
             precision = i[2]['precision']
-        #     (current_rsi, last_rsi)
+        #     (current_rsi,             last_rsi)
         r1 = (int(state1[:precision]),int(state1[precision:]))
         r2 = (int(state2[:precision]),int(state2[precision:]))
+        diffs = []
+        diffs.append(abs(r1[0] - r2[0]))
+        diffs.append(abs(r1[1] - r2[1]))
         diff1 = r1[0] - r1[1]
         diff2 = r2[0] - r2[1]
-        score = abs(diff1 - diff2) * 2
-        return score
-
+        diffs.append(abs(diff1 - diff2))
+        return np.sum(diffs)

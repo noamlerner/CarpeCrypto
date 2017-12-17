@@ -29,7 +29,7 @@ class crypto_learner(object):
             if not self.qlearner.has_seen_state(int(state)):
                 print("Havent seen state: " + state)
                 scores = self.state.get_similarity_scores(self.qlearner.get_states_seen(),state)
-                action = self.qlearner.take_action_based_on_similarity_scores(scores)
+                action = self.qlearner.act_based_on_similarity_scores(scores)
             else:
                 action = self.qlearner.query_state(int(state))
             self._get_reward(highs[:i], lows[:i], self.portfolio, action)
@@ -39,7 +39,7 @@ class crypto_learner(object):
         '''
         :param highs: high prices as a dataframe. action should have been taken on second to last data point
         :param lows:  low prices as a dataframe. action should have been taken on the second to last datapoint
-        :param holding: the state of the portfolio at the time of the action. 2 = not holding, 1 = long, 0 short
+        :param portfolio: the portfolio represnting this traders holdings
         :param action: action taken, 1 = hold max, 0 = hold none
         :return: reward based on 1,000 dollars
         '''
