@@ -82,9 +82,13 @@ class state(object):
         df = pd.DataFrame(columns=["score"])
         for s in states:
             df.loc[s] = self.compare(state,s)
-        return df
+        return df.astype(np.int64)
 
     def minimum_datapoints_required(self):
+        '''
+        returns the minimum amount of data points required to create one state.
+        :return:
+        '''
         min_required = 1
         for i in self._indicators:
             func_name = i[0] + "_points_required"

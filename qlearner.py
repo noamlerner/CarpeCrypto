@@ -53,12 +53,16 @@ class qlearner(object):
         '''
         actions = np.zeros(self.num_actions)
         num_voted = np.zeros(self.num_actions)
-        for s in scores.index:
+        # they get to vote :P
+        electoral_college = scores.nsmallest(int(len(scores)/ 10),columns="score")
+        for s in electoral_college.index:
             a = self._best_action(self.Q[s])
-            actions[a] += scores.loc[s]
+            actions[a] += scores.loc[s] ** 2
             num_voted[a]+=1
-        # TODO 0 numvoted check, dont count that index
-        actions /= num_voted
+        no_votes = np.where(num_voted == 0)[0]
+        actions[no_votes] = np.inf
+        num_voted[no_votes] = 1
+        actions /= num_voted ** 2
         return np.argmin(actions)
 
     def has_seen_state(self, state):
