@@ -15,7 +15,7 @@ class crypto_learner(object):
         action = self.qlearner.query_state(int(state))
         # iterative loop
         for i in range(start_index+1,len(prices)):
-            reward = self._get_reward(highs[:i],lows[:i],self.portfolio,action)
+            reward = self._get_reward(highs.iloc[i], lows.iloc[i], self.portfolio, action)
             state = self.state.get_state(prices[:i])
             action = self.qlearner.query(int(state), reward)
         return self.portfolio.value(lows) / self.initial_value -1
@@ -32,22 +32,21 @@ class crypto_learner(object):
                 action = self.qlearner.act_based_on_similarity_scores(scores)
             else:
                 action = self.qlearner.query_state(int(state))
-            self._get_reward(highs[:i], lows[:i], self.portfolio, action)
+            self._get_reward(highs.iloc[i], lows.iloc[i], self.portfolio, action)
         return self.portfolio.value(lows) / self.initial_value -1
 
-    def _get_reward(self, highs, lows, portfolio, action):
+    def _get_reward(self, high, low, portfolio, action):
         '''
-        :param highs: high prices as a dataframe. action should have been taken on second to last data point
-        :param lows:  low prices as a dataframe. action should have been taken on the second to last datapoint
+        high and low are the prices that can be bought/sold at.
         :param portfolio: the portfolio represnting this traders holdings
         :param action: action taken, 1 = hold max, 0 = hold none
         :return: reward based on 1,000 dollars
         '''
         if action == 0:
-            portfolio.sell(lows[:-1])
+            portfolio.sell(low)
         if action == 1:
-            portfolio.buy(highs[:-1])
-        value = portfolio.value(lows)
+            portfolio.buy(high)
+        value = portfolio.value(low)
         reward = value - self.last_value
         self.last_value = value
         return reward

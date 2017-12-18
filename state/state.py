@@ -23,6 +23,7 @@ class state(object):
         self.state_comparator = state_comparator()
         self.min_dp = minimum_datapoints_required()
         self.num_states_length = -1
+
     def get_num_states(self):
         '''
         For a given indicators list (passed in the initializer), this will return the number of possible states that can
