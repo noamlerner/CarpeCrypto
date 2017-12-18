@@ -1,12 +1,7 @@
-"""
-Template for implementing QLearner  (c) 2015 Tucker Balch
-"""
-
 import numpy as np
 import random as rand
 import pandas as pd
 class qlearner(object):
-
     def __init__(self, \
         num_states=100, \
         num_actions = 4, \
