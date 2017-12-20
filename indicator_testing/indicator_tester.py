@@ -23,8 +23,10 @@ class indicator_tester(object):
         self.trial_times = []
         self.CRs = []
         self.test()
-        print("Average CR: " + str(np.mean(self.CRs)))
-        print("Average Time To Run: " + str(np.mean(self.trial_times)))
+        self.average_cr = np.mean(self.CRs)
+        self.average_time = np.mean(self.trial_times)
+        print("Average CR: " + str(self.average_cr))
+        print("Average Time To Run: " + str(self.average_time))
 
     def test(self):
         at_index = 0
