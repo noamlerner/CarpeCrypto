@@ -27,7 +27,7 @@ class qlearner(object):
         self._states_seen = pd.DataFrame(columns=['state', 'actions'])
         self._states_seen = self._states_seen.set_index('state')
         self._most_recent_states = np.ones(self.dyna,dtype=np.int64) * -1
-        
+
     def query_state(self, s):
         """
         @summary: Update the state without updating the Q-table
@@ -124,7 +124,6 @@ class qlearner(object):
         if self.dyna == 0:
             return
         # if dyna isnt doing anything we can end early
-        d = self._states_seen.sample(self.dyna, replace=True)
         for s in self._most_recent_states:
             if s == -1:
                 break

@@ -17,4 +17,6 @@ class portfolio:
         return self.holding * price + self.amount
 
     def is_holding(self):
-        return self.holding != 0
+        if self.holding == 0:
+            return "0"
+        return "1"

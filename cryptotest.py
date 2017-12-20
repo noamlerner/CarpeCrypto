@@ -2,7 +2,7 @@ from state.state import state
 from crypto_learner import crypto_learner
 from qlearner import qlearner
 import pandas as pd
-s = state([('rsi',5,{'precision':2}),('bbands',7),('rsi',10,{'precision':2}),('bbands',3)])
+s = state([('rsi',5,{'precision':2}),('bbands',7),('rsi',10,{'precision':2}),('bbands',3)], with_holding=True)
 ql = qlearner(num_states=s.get_num_states(),num_actions=2,dyna=100)
 cl = crypto_learner(qlearner=ql, state=s)
 prices = pd.DataFrame.from_csv('./prices.csv')
