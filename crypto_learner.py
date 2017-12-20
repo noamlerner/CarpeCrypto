@@ -18,7 +18,7 @@ class crypto_learner(object):
             reward = self._get_reward(highs.iloc[i], lows.iloc[i], self.portfolio, action)
             state = self.state.get_state(prices[:i], self.portfolio.is_holding())
             action = self.qlearner.query(int(state), reward)
-        return self.portfolio.value(lows) / self.initial_value -1
+        return self.portfolio.value(lows.iloc[-1]) / self.initial_value -1
 
     def test(self,prices,highs,lows):
         self.portfolio = portfolio(self.initial_value)
