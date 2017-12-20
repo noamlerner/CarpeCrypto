@@ -28,6 +28,7 @@ class crypto_learner(object):
             action = self.get_action(prices[:i], self.portfolio.is_holding())
             self._get_reward(highs, lows, self.portfolio, action)
         return self.portfolio.value(lows.iloc[-1]) / self.initial_value -1
+
     def get_action(self, prices, is_holding):
         state = self.state.get_state(prices, is_holding)
         if not self.qlearner.has_seen_state(int(state)):

@@ -26,7 +26,7 @@ class qlearner(object):
         self.model = np.zeros((num_states, num_actions, 2))
         self._states_seen = pd.DataFrame(columns=['state', 'actions'])
         self._states_seen = self._states_seen.set_index('state')
-        self._most_recent_states = np.ones(self.dyna,dtype=np.int64) * -1
+        self._most_recent_states = np.ones((self.dyna,2),dtype=np.int64) * -1
 
     def query_state(self, s):
         """
@@ -95,8 +95,6 @@ class qlearner(object):
         self.model[self.s, self.a] = np.array([s_prime, r])
         self._see_state_action(self.s, self.a)
         self.Q[self.s, self.a] = self._new_Q_value(self.s, self.a, r, s_prime)
-        self._most_recent_states = np.roll(self._most_recent_states,1)
-        self._most_recent_states[0] = self.s
         # dyna
         self._hallucinate()
         # action
@@ -113,6 +111,9 @@ class qlearner(object):
             # self.states_seen['l'].append(s)
         elif a not in self._states_seen.loc[s]:
             self._states_seen.loc[s] = [np.append(self._states_seen.loc[s]['actions'], [a])]
+        self._most_recent_states = np.roll(self._most_recent_states,1,axis=0)
+        self._most_recent_states[0][0] = self.s
+        self._most_recent_states[0][1] = self.a
 
     def _new_Q_value(self, s, a, r, s_prime):
         old_value = (1 - self.alpha) * self.Q[s,a]
@@ -124,10 +125,10 @@ class qlearner(object):
         if self.dyna == 0:
             return
         # if dyna isnt doing anything we can end early
-        for s in self._most_recent_states:
+        for sa in self._most_recent_states:
+            s = sa[0]
             if s == -1:
                 break
-            actions_taken = self._states_seen.loc[s]['actions']
-            a = np.random.choice(actions_taken)
+            a = sa[1]
             hallucination = self.model[s, a]
             self.Q[s,a] = self._new_Q_value(s, a, int(hallucination[1]), int(hallucination[0]))
