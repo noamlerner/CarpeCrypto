@@ -25,15 +25,18 @@ class crypto_learner(object):
         self.last_value = self.initial_value
         start_index = self.state.minimum_datapoints_required()
         for i in range(start_index,len(prices)):
-            state = self.state.get_state(prices[:i], self.portfolio.is_holding())
-            if not self.qlearner.has_seen_state(int(state)):
-                print("Havent seen state: " + state)
-                scores = self.state.get_similarity_scores(self.qlearner.get_states_seen(),state)
-                action = self.qlearner.act_based_on_similarity_scores(scores)
-            else:
-                action = self.qlearner.query_state(int(state))
+            action = self.get_action(prices[:i])
             self._get_reward(highs.iloc[i], lows.iloc[i], self.portfolio, action)
-        return self.portfolio.value(lows) / self.initial_value -1
+        return self.portfolio.value(lows.iloc[-1]) / self.initial_value -1
+    def get_action(self, prices):
+        state = self.state.get_state(prices, self.portfolio.is_holding())
+        if not self.qlearner.has_seen_state(int(state)):
+            print("Havent seen state: " + state)
+            scores = self.state.get_similarity_scores(self.qlearner.get_states_seen(), state)
+            action = self.qlearner.act_based_on_similarity_scores(scores)
+        else:
+            action = self.qlearner.query_state(int(state))
+        return action
 
     def _get_reward(self, high, low, portfolio, action):
         '''

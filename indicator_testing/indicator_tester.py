@@ -58,6 +58,6 @@ class indicator_tester(object):
         self.trial_times.append(delta)
 
         print("Starting Testing for trial")
-        cr = cl.train(testing_slice['vwap'],testing_slice['high'],testing_slice['low'])
-        print("Cumulative Return: "+ str(cr))
+        cr = cl.test(testing_slice['vwap'],testing_slice['high'],testing_slice['low'])
+        print("Cumulative Return: " + str(cr))
         self.CRs.append(cr)
