@@ -13,11 +13,12 @@ class crypto_learner(object):
         # set_state
         state = self.state.get_state(prices[:start_index], self.portfolio.is_holding())
         action = self.qlearner.query_state(int(state))
+        reward = self._get_reward(highs.iloc[start_index], lows.iloc[start_index], self.portfolio, action)
         # iterative loop
         for i in range(start_index+1,len(prices)):
-            reward = self._get_reward(highs, lows, self.portfolio, action)
             state = self.state.get_state(prices[:i], self.portfolio.is_holding())
             action = self.qlearner.query(int(state), reward)
+            reward = self._get_reward(highs.iloc[i], lows.iloc[i], self.portfolio, action)
         return self.portfolio.value(lows.iloc[-1]) / self.initial_value -1
 
     def test(self,prices,highs,lows):
@@ -26,7 +27,7 @@ class crypto_learner(object):
         start_index = self.state.minimum_datapoints_required()
         for i in range(start_index,len(prices)):
             action = self.get_action(prices[:i], self.portfolio.is_holding())
-            self._get_reward(highs, lows, self.portfolio, action)
+            self._get_reward(highs.iloc[i], lows.iloc[i], self.portfolio, action)
         return self.portfolio.value(lows.iloc[-1]) / self.initial_value -1
 
     def get_action(self, prices, is_holding):
@@ -39,7 +40,7 @@ class crypto_learner(object):
             action = self.qlearner.query_state(int(state))
         return action
 
-    def _get_reward(self, highs, lows, portfolio, action):
+    def _get_reward(self, high, low, portfolio, action):
         '''
         Highs and lows should be a dataframe where a trade was taken at index -2.
         :param portfolio: the portfolio represnting this traders holdings
@@ -47,10 +48,10 @@ class crypto_learner(object):
         :return: reward based on 1,000 dollars
         '''
         if action == 0:
-            portfolio.sell(lows.iloc[-2])
+            portfolio.sell(low)
         if action == 1:
-            portfolio.buy(highs.iloc[-2])
-        value = portfolio.value(lows.iloc[-1])
+            portfolio.buy(high)
+        value = portfolio.value(low)
         reward = value - self.last_value
         self.last_value = value
         return reward
