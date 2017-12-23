@@ -8,7 +8,7 @@ class state_comparator(object):
     it should then return the similarity of the two states. if state1==state2, the method should return 0. Max dissimilarity
     should return 99
 
-    we need to think of a standard way to do this so that one comparison function doesnt outway the rest.
+    we need to think of a standard way to do this so that one comparison function doesnt outweigh the rest.
     '''
     def __init__(self):
         pass
@@ -40,22 +40,77 @@ class state_comparator(object):
 
     def rsi_compare(self, i, state1, state2):
         '''
-            Calculates simliarity based on the sum of the following values:
-                absolute value of difference in current rsi and last rsi
-                absolute value difference in the difference between the current rsi and the last rsi
-                example:precision=1, state1=12 state2=34
-                returns (3-1) + (4-2) + ( (2-1) - (4-3) ) = 2+ 2 + 0 = 4
+            Calculates the normalized simliarity based on the sum of the following values:
+                absolute value of difference in current rsi and last rsi for each state scaled by its deviation from the middle RSI value (5 if precision=1, 50 if precision=2, etc)
+                squared difference of current state1 rsi and current state2 rsi, also scaled by their deviation from the middle RSI
+                examples:
+                    (case 1, reasonable difference)
+                    precision = 1 (maxValue = 10, middleValue = 5, maxMagnitudeFromMiddle = 25)
+                    state1 = 2 4 (current = 2, last = 4)
+                    state2 = 5 7 (current = 5, last = 7)
+                    currentState1Severity = (2 - 5) ** 2, preserving sign = -9
+                    lastState1Severity = (4 - 5) ** 2, preserving sign = -1
+                    currentState2Severity = (5 - 5) ** 2, preserving sign = 0
+                    lastState2Severity = (7 - 5) ** 2, preserving sign = 4
+                    stateMovementDifference = |-9 - -1| + |0 - 4| = 12
+                    currentStateDifference = |-9 - 0| * 4 = 36
+                    difference = (12 + 18) * (99 / (8 * 25)) = 15
+
+                    (case 2, max possible difference)
+                    precision = 1 (maxValue = 10, middleValue = 5, maxMagnitudeFromMiddle = 25)
+                    state1 = 10 0 (current = 10, last = 0)
+                    state2 = 0 10 (current = 0, last = 10)
+                    currentState1Severity = (10 - 5) ** 2, preserving sign = 25
+                    lastState1Severity = (0 - 5) ** 2, preserving sign = -25
+                    currentState2Severity = (10 - 5) ** 2, preserving sign = 25
+                    lastState2Severity = (0 - 5) ** 2, preserving sign = -25
+                    stateMovementDifference = |25 - -25| + |25 - -25| = 100
+                    currentStateDifference = |-25 - 25| * 4 = 200
+                    difference = (100 + 200) * (99 / (8 * 25)) = 99
+
+                    (case 3, increased precision, slightly bigger difference than case 1)
+                    precision = 1 (maxValue = 100, middleValue = 50, maxMagnitudeFromMiddle = 2500)
+                    state1 = 80 70 (current = 80, last = 70)
+                    state2 = 20 30 (current = 20, last = 30)
+                    currentState1Severity = (80 - 50) ** 2, preserving sign = 900
+                    lastState1Severity = (70 - 50) ** 2, preserving sign = 400
+                    currentState2Severity = (20 - 50) ** 2, preserving sign = -900
+                    lastState2Severity = (30 - 50) ** 2, preserving sign = -400
+                    stateMovementDifference = |900 - 400| + |-900 - -400| = 2600
+                    currentStateDifference = |900 - -900| * 4 = 7200
+                    difference = (2600 + 7200) * (99 / (8 * 2500)) = 48
         '''
+
         precision = 1
         if len(i) == 3 and 'precision' in i[2]:
             precision = i[2]['precision']
-        #     (current_rsi,             last_rsi)
-        r1 = (int(state1[:precision]),int(state1[precision:]))
-        r2 = (int(state2[:precision]),int(state2[precision:]))
-        diffs = []
-        diffs.append(abs(r1[0] - r2[0]))
-        diffs.append(abs(r1[1] - r2[1]))
-        diff1 = r1[0] - r1[1]
-        diff2 = r2[0] - r2[1]
-        diffs.append(abs(diff1 - diff2))
-        return np.sum(diffs)
+        # maxValue is the largest value any state can take. half of max value is the midpoint for RSI (corresponds to 50%)
+        maxValue = 10 ** precision
+        middleValue = maxValue / 2.0
+        maxMagnitudeFromMiddle = middleValue ** 2
+        # states are integers where the first [precision] integers are the current_rsi, and the last [precision] integers are the last_rsi
+        currentState1 = int(state1 / maxValue)
+        lastState1 = int(state1 % maxValue)
+        currentState2 = int(state2 / maxValue)
+        lastState2 = int(state2 % maxValue)
+
+        # trying to magnify the difference from the middle value, while preserving the sign. these all range [-maxMagnitudeFromMiddle, maxMagnitudeFromMiddle]
+        currentState1Severity = ((currentState1 - middleValue) ** 2) * (-1 if currentState1 < middleValue else 1)
+        lastState1Severity = ((lastState1 - middleValue) ** 2) * (-1 if lastState1 < middleValue else 1)
+        currentState2Severity = ((currentState2 - middleValue) ** 2) * (-1 if currentState2 < middleValue else 1)
+        lastState2Severity = ((lastState2 - middleValue) ** 2) * (-1 if lastState2 < middleValue else 1)
+
+        # get differences between the recent changes of each state
+        state1Change = abs(currentState1Severity - lastState1Severity) # range [0, 2 * maxMagnitudeFromMiddle]
+        state2Change = abs(currentState2Severity - lastState2Severity) # range [0, 2 * maxMagnitudeFromMiddle]
+        stateMovementDifference = state1Change + state2Change # range [0, 4 * maxMagnitudeFromMiddle]
+
+        # get increased difference between current states
+        currentStateDifference = abs(currentState1Severity - currentState2Severity) * 4 # range [0, 8 * maxMagnitudeFromMiddle]
+
+        # range of (stateMovementDifference + currentStateDifference) is [0, 12 * maxMagnitudeFromMiddle]
+        # constrain to range [0, 99]
+        return int((stateMovementDifference + currentStateDifference) * (99.0 / (12.0 * maxMagnitudeFromMiddle)))
+
+
+
