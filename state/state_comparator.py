@@ -16,20 +16,24 @@ class state_comparator(object):
     def bbands_compare(self, i, state1, state2):
         '''
             0 if the same state,
-            50 if movement is horizontal
-            99 otherwise
+            1 if movement is horizontal (11, 22)
+            2 if movement is switched (12, 21)
+            otherwise, they are treated like x, y pairs and their distance to each other is returned as the similarity (plus 3 to ensure it doesnt overlap the other values)
         '''
         if state1 == state2:
             return 0
         state1_int = int(state1)
         state2_int = int(state2)
         # (current_price_state, last_price_state)
-        s1 = (int(state1_int / 3), state1_int % 3)
-        s2 = (int(state2_int / 3), state2_int % 3)
-        same_area = s1[0] == s1[1] and s2[0] == s2[1]
-        if same_area:
-            return 50
-        return 99
+        state1 = int(state1_int / 3)
+        lastState1 = state1_int % 3
+        state2 = int(state2_int / 3)
+        lastState2 = state2_int % 3
+        if state1 == lastState1 and state2 == lastState2:
+            return 1
+        if state1 == lastState2 and state2 == lastState1:
+            return 2
+        return int(((state1 - state2) ** 2 + (lastState1 - lastState2) ** 2) ** 0.5) + 3
 
 
     def rsi_compare(self, i, state1, state2):

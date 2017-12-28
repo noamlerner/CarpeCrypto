@@ -21,7 +21,7 @@ class state_creator(object):
 
     def bbands_state(self, i, prices):
         '''
-        returns a state from [0..8] representing the current price relative to the current bollinger bands and the last price
+        returns a state from [0..6] representing the current price relative to the current bollinger bands and the last price
         relative to the last bollinger bands.
         The current bollinger band can have the values 0,1 or 2 representing
             0=price is below lower band
