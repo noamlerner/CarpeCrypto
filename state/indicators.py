@@ -34,7 +34,7 @@ def _rsi_for_window(window):
             losses.append(abs(delta))
     RS = (np.sum(gains)/len(window)) / (np.sum(losses)/len(window))
 
-    return 100 - 100 / (1 +RS)
+    return 100 - 100 / (1 + RS)
 
 def rolling_rsi(prices, window=10):
     return prices.rolling(window=window, center=False).apply(_rsi_for_window)
