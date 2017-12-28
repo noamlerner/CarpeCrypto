@@ -21,7 +21,7 @@ class state_creator(object):
 
     def bbands_state(self, i, prices):
         '''
-        returns a state from [0..8] representing the current price relative to the current bollinger bands and the last price
+        returns a state from [0..6] representing the current price relative to the current bollinger bands and the last price
         relative to the last bollinger bands.
         The current bollinger band can have the values 0,1 or 2 representing
             0=price is below lower band
@@ -97,11 +97,8 @@ class state_creator(object):
 
         rsi_0 = self._num_to_precision(current_rsi,precision)
         rsi_1 = self._num_to_precision(last_rsi,precision)
-        s0 = self._with_length(rsi_0,precision)
-        s1 =self._with_length(rsi_1,precision)
         # essentially elimating 10/100/1000... and rounding to 9/99/999
-        if len(s0) > precision:
-            s0 = "9" * precision
-        if len(s1) > precision:
-            s1 = "9" * precision
+        s0 = self._with_length(rsi_0,precision) * (((10 ** precision) - 1) / (10 ** precision))
+        s1 = self._with_length(rsi_1,precision) * (((10 ** precision) - 1) / (10 ** precision))
         return s0 + s1
+
